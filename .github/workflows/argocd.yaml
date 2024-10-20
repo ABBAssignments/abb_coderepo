@@ -1,0 +1,40 @@
+name: Deploy to AKS with Argo CD
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Azure CLI
+        uses: azure/setup-azure@v1
+        with:
+          azure-cli-version: '2.33.0'  # Use the latest stable version
+
+      - name: Login to Azure
+        run: az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group <your-resource-group> --name <your-cluster-name> --overwrite-existing
+
+      - name: Install kubectl
+        run: |
+          az aks install-cli
+
+      - name: Install Argo CD CLI
+        run: |
+          curl -sSL https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64 -o argocd
+          sudo install argocd /usr/local/bin
+
+      - name: Apply Argo CD Application
+        run: kubectl apply -f argocd-app.yaml
+
+      - name: Sync Argo CD Application
+        run: argocd app sync <your-argocd-app-name>
