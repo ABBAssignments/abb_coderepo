@@ -1,0 +1,21 @@
+replicaCount: 2
+
+image:
+  repository: my-app-repo/my-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  name: ""
+  path: /
+  pathType: ImplementationSpecific
+  host: chart-example.local
+  annotations: {}
+  tls: []  # Treated as empty list to disable TLS
+
+resources: {}
